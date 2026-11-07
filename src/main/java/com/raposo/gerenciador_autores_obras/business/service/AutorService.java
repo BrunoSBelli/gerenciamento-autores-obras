@@ -5,17 +5,21 @@ import com.raposo.gerenciador_autores_obras.api.mapper.AutorMapper;
 import com.raposo.gerenciador_autores_obras.infrastructure.entity.AutorEntity;
 import com.raposo.gerenciador_autores_obras.infrastructure.exceptions.BusinessException;
 import com.raposo.gerenciador_autores_obras.infrastructure.exceptions.ConflictException;
+import com.raposo.gerenciador_autores_obras.infrastructure.exceptions.ResourceNotFoundException;
 import com.raposo.gerenciador_autores_obras.infrastructure.repository.AutorRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
+@Transactional(readOnly = true)
 public class AutorService {
 
     private final AutorRepository autorRepository;
     private final AutorMapper autorMapper;
 
+    @Transactional
     public AutorResponseDTO salvarAutor(AutorRequestDTO dto){
 
         validarRegrasDeNegocio(dto);
@@ -25,6 +29,22 @@ public class AutorService {
         return autorMapper.paraResponse(
                 autorRepository.save(entity)
         );
+    }
+
+    public AutorResponseDTO buscarAutorPorEmail(String email){
+        AutorEntity entity = autorRepository.findByEmail(email).orElseThrow(()-> new ResourceNotFoundException("Autor não encontrado com o e-mail: " + email));
+        return autorMapper.paraResponse(entity);
+    }
+
+    @Transactional
+    public void deletarAutorPorEmail(String email) {
+        AutorEntity autor = autorRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Autor não encontrado com o e-mail: " + email));
+
+        // Autor é o lado DONO: o Hibernate limpa as linhas dele em autor_obra sozinho.
+        // As obras NÃO são apagadas (não temos cascade), só o vínculo some.
+        autorRepository.delete(autor);
     }
 
     private void validarRegrasDeNegocio(AutorRequestDTO dto){
