@@ -8,19 +8,21 @@ import com.raposo.gerenciador_autores_obras.infrastructure.entity.AutorEntity;
 import com.raposo.gerenciador_autores_obras.infrastructure.entity.ObraEntity;
 import com.raposo.gerenciador_autores_obras.infrastructure.exceptions.BusinessException;
 import com.raposo.gerenciador_autores_obras.infrastructure.exceptions.NotFoundException;
+import com.raposo.gerenciador_autores_obras.infrastructure.exceptions.ResourceNotFoundException;
 import com.raposo.gerenciador_autores_obras.infrastructure.repository.AutorRepository;
 import com.raposo.gerenciador_autores_obras.infrastructure.repository.ObraRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Transactional(readOnly = true)
 public class ObraService {
 
 
@@ -29,6 +31,7 @@ public class ObraService {
     private final ObraMapper obraMapper;
 
 
+    @Transactional
     public ObraResponseDTO salvarObra(ObraRequestDTO dto){
 
         validarRegrasDeNegocio(dto);
@@ -44,6 +47,33 @@ public class ObraService {
 
         return obraMapper.paraResponse(entity);
     }
+
+    public List<ObraResponseDTO> buscarObraPorNome(String nome){
+        return obraRepository.findByNomeContainingIgnoreCase(nome).stream()
+                .map(obraMapper::paraResponse)   // converte cada obra
+                .toList();
+    }
+
+    public ObraResponseDTO buscarObraPorId(Long id){
+        ObraEntity entity = obraRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Id não cadastrado!" + id));
+
+        return obraMapper.paraResponse(entity);
+    }
+
+    @Transactional
+    public void deletarObraPorId(Long id) {
+        ObraEntity obra = obraRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Obra não encontrada com o id: " + id));
+
+        // Desfaz o vínculo pelo lado DONO antes de apagar.
+        // A cópia (new HashSet<>) evita erro ao alterar a lista enquanto ela é percorrida.
+        new HashSet<>(obra.getAutores()).forEach(autor -> autor.removerObra(obra));
+
+        obraRepository.delete(obra);
+    }
+
+
 
     private void validarRegrasDeNegocio(ObraRequestDTO dto){
 
