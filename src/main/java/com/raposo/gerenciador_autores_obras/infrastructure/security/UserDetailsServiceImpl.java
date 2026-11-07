@@ -1,7 +1,10 @@
-package com.raposo.usuario.infrastructure.security;
+package com.raposo.gerenciador_autores_obras.infrastructure.security;
 
-import com.raposo.usuario.infrastructure.entity.Usuario;
-import com.raposo.usuario.infrastructure.repository.UsuarioRepository;
+import com.raposo.gerenciador_autores_obras.infrastructure.entity.AutorEntity;
+import com.raposo.gerenciador_autores_obras.infrastructure.entity.UsuarioEntity;
+import com.raposo.gerenciador_autores_obras.infrastructure.repository.AutorRepository;
+import com.raposo.gerenciador_autores_obras.infrastructure.repository.UsuarioRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -9,23 +12,20 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    // Repositório para acessar dados de usuário no banco de dados
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository; // agora busca em Usuario
 
-    // Implementação do metodo para carregar detalhes do usuário pelo e-mail
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // Busca o usuário no banco de dados pelo e-mail
-        Usuario usuario = usuarioRepository.findByEmail(email)
+        UsuarioEntity usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email));
 
-        // Cria e retorna um objeto UserDetails com base no usuário encontrado
         return org.springframework.security.core.userdetails.User
-                .withUsername(usuario.getEmail()) // Define o nome de usuário como o e-mail
-                .password(usuario.getSenha()) // Define a senha do usuário
-                .build(); // Constrói o objeto UserDetails
+                .withUsername(usuario.getEmail())
+                .password(usuario.getSenha()) // hash BCrypt do banco
+                .roles("USER")                // papel básico
+                .build();
     }
 }

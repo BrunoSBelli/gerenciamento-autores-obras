@@ -3,6 +3,8 @@ package com.raposo.gerenciador_autores_obras.infrastructure.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,7 +13,6 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
 
 @Entity
 @Table(name = "autor")
@@ -31,16 +32,13 @@ public class AutorEntity {
     private String email;
 
     @Column(name = "dataNascimento")
-    private String dataNascimento;
+    private LocalDate dataNascimento;
 
     @Column(name = "paisOrigem", nullable = false)
     private String paisOrigem;
 
     @Column(name = "cpf")
     private String cpf;
-
-    @Column(name = "autor_id")
-    private String autor_id;
 
     @ManyToMany
     @JoinTable(

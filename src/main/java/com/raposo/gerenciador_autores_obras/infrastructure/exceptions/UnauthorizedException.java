@@ -1,4 +1,4 @@
-package com.raposo.usuario.infrastructure.exceptions;
+package com.raposo.gerenciador_autores_obras.infrastructure.exceptions;
 
 import org.springframework.security.core.AuthenticationException;
 

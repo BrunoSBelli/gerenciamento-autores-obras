@@ -1,4 +1,3 @@
 package com.raposo.gerenciador_autores_obras.api.dto;
 
-public enum ObraResumoDTO {
-}
+public record ObraResumoDTO(Long id, String nome) {}
