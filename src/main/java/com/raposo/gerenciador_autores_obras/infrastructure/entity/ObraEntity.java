@@ -10,7 +10,7 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+//@Builder - SEM Builder porque estou usando Mapper
 
 
 @Entity
