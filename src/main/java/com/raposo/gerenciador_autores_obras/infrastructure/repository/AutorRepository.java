@@ -12,4 +12,8 @@ public interface AutorRepository extends JpaRepository<AutorEntity, Long> {
     Optional<AutorEntity> findById(Long Id);
 
     Optional<AutorEntity> findByEmail(String email);
+
+    boolean existsByEmail(String email);
+
+    boolean existsByCpf(String cpf);
 }
