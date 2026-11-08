@@ -51,4 +51,11 @@ public class ObraController {
         obraService.deletarObraPorId(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Atualizar Obra", description = "Substitui os dados de uma obra")
+    public ResponseEntity<ObraResponseDTO> atualizarObra(@PathVariable Long id,
+                                                         @Valid @RequestBody ObraRequestDTO dto) {
+        return ResponseEntity.ok(obraService.atualizarObra(id, dto));
+    }
 }

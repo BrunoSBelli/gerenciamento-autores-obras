@@ -73,6 +73,21 @@ public class ObraService {
         obraRepository.delete(obra);
     }
 
+    @Transactional
+    public ObraResponseDTO atualizarObra(Long id, ObraRequestDTO dto) {
+
+        ObraEntity obra = obraRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Obra não encontrada com o id: " + id));
+
+        validarRegrasDeNegocio(dto);                                   // a regra das datas, que já existe
+        Set<AutorEntity> novosAutores = buscarAutores(dto.autoresIds()); // o método que já existe
+
+        obraMapper.atualizarEntity(dto, obra);
+        sincronizarAutores(obra, novosAutores);
+
+        return obraMapper.paraResponse(obra);
+    }
+
 
 
     private void validarRegrasDeNegocio(ObraRequestDTO dto){
@@ -106,6 +121,22 @@ public class ObraService {
         }
 
         return new HashSet<>(autoresEncontrados);
+    }
+
+    private void sincronizarAutores(ObraEntity obra, Set<AutorEntity> novosAutores) {
+
+        Set<Long> idsNovos = novosAutores.stream()
+                .map(AutorEntity::getId)
+                .collect(Collectors.toSet());
+
+        // Quem saiu da lista: desfaz o vínculo (pelo lado DONO)
+        // A cópia (new HashSet) evita alterar a coleção enquanto ela é percorrida
+        new HashSet<>(obra.getAutores()).stream()
+                .filter(autor -> !idsNovos.contains(autor.getId()))
+                .forEach(autor -> autor.removerObra(obra));
+
+        // Quem entrou: cria o vínculo (quem já estava é ignorado, porque é um Set)
+        novosAutores.forEach(autor -> autor.adicionarObra(obra));
     }
 
 }

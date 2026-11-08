@@ -46,5 +46,12 @@ public class AutorController {
         return ResponseEntity.noContent().build();   // 204: deu certo, nada a devolver
     }
 
+    @PutMapping("/{id}")
+    @Operation(summary = "Atualizar Autor", description = "Substitui os dados de um autor")
+    public ResponseEntity<AutorResponseDTO> atualizarAutor(@PathVariable Long id,
+                                                           @Valid @RequestBody AutorRequestDTO dto) {
+        return ResponseEntity.ok(autorService.atualizarAutor(id, dto));   // 200
+    }
+
 
 }

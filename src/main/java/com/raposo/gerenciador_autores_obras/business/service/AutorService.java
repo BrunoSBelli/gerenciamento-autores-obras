@@ -22,7 +22,7 @@ public class AutorService {
     @Transactional
     public AutorResponseDTO salvarAutor(AutorRequestDTO dto){
 
-        validarRegrasDeNegocio(dto);
+        validarCpfObrigatorioParaBrasileiros(dto);
 
         AutorEntity entity = autorMapper.paraEntity(dto);
 
@@ -38,37 +38,49 @@ public class AutorService {
 
     @Transactional
     public void deletarAutorPorEmail(String email) {
-        AutorEntity autor = autorRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Autor não encontrado com o e-mail: " + email));
+        AutorEntity autor = autorRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Autor não encontrado com o e-mail: " + email));
 
         // Autor é o lado DONO: o Hibernate limpa as linhas dele em autor_obra sozinho.
         // As obras NÃO são apagadas (não temos cascade), só o vínculo some.
         autorRepository.delete(autor);
     }
 
-    private void validarRegrasDeNegocio(AutorRequestDTO dto){
+    @Transactional
+    public AutorResponseDTO atualizarAutor(Long id, AutorRequestDTO dto) {
 
-        if (autorRepository.existsByEmail(dto.email())){
-            throw new ConflictException("E-mail já cadastrado! ");
+        AutorEntity autor = autorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Autor não encontrado com o id: " + id));
+
+        //Valida ANTES de alterar a entidade
+        validarCpfObrigatorioParaBrasileiros(dto);
+
+        if (autorRepository.existsByEmailAndIdNot(dto.email(), id)) {
+            throw new ConflictException("E-mail já cadastrado por outro autor");
+        }
+        if (temCpf(dto) && autorRepository.existsByCpfAndIdNot(dto.cpf(), id)) {
+            throw new ConflictException("CPF já cadastrado por outro autor");
         }
 
-        boolean cpfJáCadastrado = dto.cpf()!=null && !dto.cpf().isBlank();
+        //Copia os campos para a entidade existente
+        autorMapper.atualizarEntity(dto, autor);
 
-        //Regra: CPF obrigatorio para Brasileiros
-        if(ehBrasileiro(dto.paisOrigem()) && !cpfJáCadastrado){
+        //Sem save(): o dirty checking grava ao fechar a transação
+        return autorMapper.paraResponse(autor);
+    }
+
+
+
+
+    private void validarCpfObrigatorioParaBrasileiros(AutorRequestDTO dto) {
+        if (ehBrasileiro(dto.paisOrigem()) && !temCpf(dto)) {
             throw new BusinessException("CPF é obrigatório para autores Brasileiros");
         }
-
-        //Regra: CPF único
-        if (cpfJáCadastrado && autorRepository.existsByCpf(dto.cpf())) {
-            throw new ConflictException("CPF já cadastrado");
-        }
-
     }
 
 
     private boolean ehBrasileiro(String paisOrigem){
         return "Brasil".equalsIgnoreCase(paisOrigem);
     }
+
+    private boolean temCpf(AutorRequestDTO dto) { return dto.cpf() != null && !dto.cpf().isBlank(); }
 }
