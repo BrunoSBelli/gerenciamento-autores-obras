@@ -7,6 +7,7 @@ import com.raposo.gerenciador_autores_obras.infrastructure.entity.AutorEntity;
 import com.raposo.gerenciador_autores_obras.infrastructure.entity.ObraEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface ObraMapper {
@@ -19,4 +20,8 @@ public interface ObraMapper {
 
     // O MapStruct usa este metodo sozinho para converter cada autor do Set
     AutorResumoDTO paraResumo(AutorEntity autor);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "autores", ignore = true)   // sincronizados no Service, pelos ids
+    void atualizarEntity(ObraRequestDTO dto, @MappingTarget ObraEntity entity);
 }

@@ -7,6 +7,7 @@ import com.raposo.gerenciador_autores_obras.infrastructure.entity.AutorEntity;
 import com.raposo.gerenciador_autores_obras.infrastructure.entity.ObraEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 
 @Mapper(componentModel = "spring")
@@ -19,4 +20,8 @@ public interface AutorMapper {
         AutorResponseDTO paraResponse(AutorEntity entity);
 
         ObraResumoDTO paraResumo(ObraEntity obra);  // o MapStruct reaproveita para o Set
+
+        @Mapping(target = "id", ignore = true)
+        @Mapping(target = "obras", ignore = true)   // o vínculo NÃO muda pelo PUT do autor
+        void atualizarEntity(AutorRequestDTO dto, @MappingTarget AutorEntity entity);
 }
