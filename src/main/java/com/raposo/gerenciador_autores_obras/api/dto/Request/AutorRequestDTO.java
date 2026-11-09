@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 public record AutorRequestDTO(
         @NotBlank String nome,
-        String sexo,                       // opcional
+        String sexo,
         @NotBlank @Email String email,
         @Past LocalDate dataNascimento,    // data no passado; null é aceito
         @NotBlank String paisOrigem,
