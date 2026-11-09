@@ -7,7 +7,6 @@ import com.raposo.gerenciador_autores_obras.api.mapper.ObraMapper;
 import com.raposo.gerenciador_autores_obras.infrastructure.entity.AutorEntity;
 import com.raposo.gerenciador_autores_obras.infrastructure.entity.ObraEntity;
 import com.raposo.gerenciador_autores_obras.infrastructure.exceptions.BusinessException;
-import com.raposo.gerenciador_autores_obras.infrastructure.exceptions.NotFoundException;
 import com.raposo.gerenciador_autores_obras.infrastructure.exceptions.ResourceNotFoundException;
 import com.raposo.gerenciador_autores_obras.infrastructure.repository.AutorRepository;
 import com.raposo.gerenciador_autores_obras.infrastructure.repository.ObraRepository;
@@ -35,7 +34,6 @@ public class ObraService {
     public ObraResponseDTO salvarObra(ObraRequestDTO dto){
 
         validarRegrasDeNegocio(dto);
-
 
         Set<AutorEntity> autores = buscarAutores(dto.autoresIds());
 
@@ -80,7 +78,7 @@ public class ObraService {
                 .orElseThrow(() -> new ResourceNotFoundException("Obra não encontrada com o id: " + id));
 
         validarRegrasDeNegocio(dto);                                   // a regra das datas, que já existe
-        Set<AutorEntity> novosAutores = buscarAutores(dto.autoresIds()); // o método que já existe
+        Set<AutorEntity> novosAutores = buscarAutores(dto.autoresIds()); // o metodo que já existe
 
         obraMapper.atualizarEntity(dto, obra);
         sincronizarAutores(obra, novosAutores);
@@ -117,7 +115,7 @@ public class ObraService {
             Set<Long> idsFaltando = new HashSet<>(ids);
             idsFaltando.removeAll(idsEncontrados);
 
-            throw new NotFoundException("Autor(es) não encontrado(s): " + idsFaltando);
+            throw new ResourceNotFoundException("Autor(es) não encontrado(s): " + idsFaltando);
         }
 
         return new HashSet<>(autoresEncontrados);

@@ -21,5 +21,6 @@ public interface AutorRepository extends JpaRepository<AutorEntity, Long> {
 
     // "E o id seja diferente deste" = ignora o próprio registro
     boolean existsByEmailAndIdNot(String email, Long id);
+
     boolean existsByCpfAndIdNot(String cpf, Long id);
 }
