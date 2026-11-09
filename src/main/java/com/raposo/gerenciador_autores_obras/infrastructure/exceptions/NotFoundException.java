@@ -1,7 +1,0 @@
-package com.raposo.gerenciador_autores_obras.infrastructure.exceptions;
-
-public class NotFoundException extends RuntimeException {
-    public NotFoundException(String message) {
-        super(message);
-    }
-}
